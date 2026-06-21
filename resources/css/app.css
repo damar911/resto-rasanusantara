@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/*
+|--------------------------------------------------------------------------
+| Tema Warna RasaNusantara - HIJAU
+|--------------------------------------------------------------------------
+| Skema warna utama menggunakan palet emerald/green Tailwind,
+| menggantikan tema kuning/amber pada referensi awal.
+| Warna amber tetap dipakai sangat terbatas hanya untuk badge notifikasi
+| (mis. jumlah keranjang) agar tetap menarik perhatian tanpa mendominasi.
+*/
+
+@theme {
+    --color-brand-50: #ecfdf5;
+    --color-brand-100: #d1fae5;
+    --color-brand-200: #a7f3d0;
+    --color-brand-300: #6ee7b7;
+    --color-brand-400: #34d399;
+    --color-brand-500: #10b981;
+    --color-brand-600: #059669;
+    --color-brand-700: #047857;
+    --color-brand-800: #065f46;
+    --color-brand-900: #064e3b;
+}
+
+@layer base {
+    body {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl px-4 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-secondary {
+        @apply bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium rounded-xl px-4 py-2.5 transition-colors;
+    }
+
+    .card {
+        @apply bg-white rounded-2xl shadow-sm border border-emerald-100/60;
+    }
+
+    .input-field {
+        @apply w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition;
+    }
+
+    .chip {
+        @apply px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap;
+    }
+
+    .chip-active {
+        @apply bg-emerald-600 text-white border-emerald-600;
+    }
+
+    .chip-inactive {
+        @apply bg-white text-slate-600 border-slate-200 hover:border-emerald-300;
+    }
+
+    .step-dot {
+        @apply w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors;
+    }
+
+    .step-dot-done {
+        @apply bg-emerald-600 border-emerald-600 text-white;
+    }
+
+    .step-dot-pending {
+        @apply bg-white border-slate-200 text-slate-400;
+    }
+}
