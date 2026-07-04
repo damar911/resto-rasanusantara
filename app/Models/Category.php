@@ -15,7 +15,6 @@ class Category extends Model
         'slug',
         'sort_order',
     ];
-
     /**
      * Semua menu yang termasuk dalam kategori ini.
      */

@@ -20,8 +20,7 @@ Route::get('/', [MenuController::class, 'index'])->name('customer.menu');
 Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 Route::get('/order/{order}/track', [OrderController::class, 'track'])->name('order.track');
 Route::get('/order/{order}/status', [OrderController::class, 'status'])->name('order.status');
-Route::get('/lacak-antrean', [OrderController::class, 'trackSearch'])->name('order.track-search');
-Route::post('/lacak-antrean', [OrderController::class, 'trackSearchSubmit'])->name('order.track-search.submit');
+
 /*
 |--------------------------------------------------------------------------
 | Admin Auth Routes
@@ -60,3 +59,6 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     });
 });
+
+// Rating menu
+Route::post('/menu/{menu}/rating', [\App\Http\Controllers\RatingController::class, 'store'])->name('menu.rating');

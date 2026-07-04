@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'RasaNusantara - Sistem Pemesanan & Antrean Digital')</title>
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-emerald-50 min-h-screen pb-20 font-sans antialiased text-slate-800">
@@ -26,29 +25,43 @@
         @yield('content')
     </main>
 
-    {{-- Bottom Navigation ala mobile app --}}
+    {{-- Bottom Navigation - 3 item, tanpa Admin --}}
     <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-emerald-100 shadow-lg z-40">
-        <div class="max-w-5xl mx-auto grid grid-cols-4 text-center text-xs">
-            <a href="{{ route('customer.menu') }}" class="flex flex-col items-center gap-1 py-2.5 text-emerald-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                Semua Menu
+        <div class="max-w-5xl mx-auto grid grid-cols-3 text-center text-xs">
+
+            <a href="{{ route('customer.menu') }}"
+                class="flex flex-col items-center gap-1 py-3 text-emerald-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span>Semua Menu</span>
             </a>
-            <button type="button" id="nav-cart-btn" class="flex flex-col items-center gap-1 py-2.5 text-slate-500 relative">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                Keranjang
-                <span id="cart-badge" class="hidden absolute -top-0.5 right-6 bg-amber-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
+
+            <button type="button" id="nav-cart-btn"
+                class="flex flex-col items-center gap-1 py-3 text-slate-500 relative">
+                <span class="relative inline-flex">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <span id="cart-badge"
+    style="display:none;"
+    class="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full items-center justify-center font-bold leading-none">
+    0
+</span>
+                </span>
+                <span>Keranjang</span>
             </button>
-            <a href="{{ route('order.track-search') }}"
-    id="nav-track-btn"
-    class="flex flex-col items-center gap-1 py-2.5 {{ request()->routeIs('order.track-search*') ? 'text-emerald-700' : 'text-slate-500' }}"
->
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Lacak Antrean
+
+            <a href="#" id="nav-track-btn"
+                class="flex flex-col items-center gap-1 py-3 text-slate-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Lacak Antrean</span>
             </a>
-            <a href="{{ route('admin.login') }}" class="flex flex-col items-center gap-1 py-2.5 text-slate-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                Admin
-            </a>
+
         </div>
     </nav>
 

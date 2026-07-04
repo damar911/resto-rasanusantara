@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Menu extends Model
@@ -18,49 +19,50 @@ class Menu extends Model
         'price',
         'photo',
         'availability',
+        'avg_rating',
+        'rating_count',
     ];
 
-    /**
-     * Kategori dari menu ini (Makanan, Minuman, Cemilan).
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Cek apakah menu masih bisa dipesan.
-     */
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(MenuRating::class);
+    }
+
     public function isAvailable(): bool
     {
         return $this->availability === 'available';
     }
 
-    /**
-     * URL publik foto menu. Jika tidak ada foto, kembalikan placeholder.
-     */
     public function getPhotoUrlAttribute(): string
     {
         if ($this->photo) {
             return Storage::url($this->photo);
         }
-
         return asset('images/menu-placeholder.svg');
     }
 
-    /**
-     * Harga terformat dalam Rupiah, contoh: Rp 25.000
-     */
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');
     }
 
-    /**
-     * Scope hanya menu yang tersedia (belum habis).
-     */
     public function scopeAvailable($query)
     {
         return $query->where('availability', 'available');
+    }
+
+    /**
+     * Recalculate dan simpan ulang avg_rating & rating_count setelah ada rating baru.
+     */
+    public function recalculateRating(): void
+    {
+        $this->avg_rating   = $this->ratings()->avg('rating') ?? 0;
+        $this->rating_count = $this->ratings()->count();
+        $this->save();
     }
 }
