@@ -2,7 +2,7 @@
 <div
     x-show="cartOpen"
     x-cloak
-    class="fixed inset-0 z-50 flex items-end"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
     style="display: none;"
 >
     {{-- Backdrop --}}
@@ -22,14 +22,14 @@
     <div
         x-show="cartOpen"
         x-transition:enter="transition ease-out duration-250"
-        x-transition:enter-start="translate-y-full"
-        x-transition:enter-end="translate-y-0"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="translate-y-0"
-        x-transition:leave-end="translate-y-full"
-        class="relative bg-white w-full rounded-t-3xl max-h-[88vh] overflow-y-auto z-10"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="relative bg-white w-full max-w-md rounded-3xl max-h-[90vh] overflow-y-auto shadow-xl z-10"
     >
-        <div class="sticky top-0 bg-white border-b border-emerald-100 px-5 py-4 flex items-center justify-between rounded-t-3xl">
+        <div class="sticky top-0 bg-white border-b border-emerald-100 px-5 py-4 flex items-center justify-between rounded-t-3xl z-10">
             <h3 class="font-bold text-slate-800">Keranjang Pemesanan Anda</h3>
             <button type="button" @click="cartOpen = false" class="text-slate-400 hover:text-slate-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -79,24 +79,21 @@
                             <select x-model="tableId" class="input-field">
                                 <option value="">Pilih Meja</option>
                                 <template x-for="table in tables" :key="table.id">
-                                    <option :value="table.id" x-text="table.label"></option>
+                                    <option :value="table.id" :disabled="!table.available" x-text="table.available ? table.label : table.label + ' (Terisi)'"></option>
                                 </template>
                             </select>
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-slate-600 mb-1 block">Nomor WhatsApp Aktif</label>
-                            <input type="tel" x-model="whatsappNumber" placeholder="08xxxxxxxxxx" class="input-field">
+                            <input type="tel" x-model="whatsappNumber" @change="loadTables()" placeholder="08xxxxxxxxxx" class="input-field">
                             <p class="text-xs text-slate-400 mt-1">Sistem akan mengirim notifikasi pesanan ke nomor WA ini.</p>
                         </div>
 
-                        <div>
-                            <label class="text-xs font-medium text-slate-600 mb-1 block">Metode Pembayaran</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button type="button" @click="paymentMethod = 'tunai'" :class="paymentMethod === 'tunai' ? 'chip-active' : 'chip-inactive'" class="chip text-center justify-center">Tunai</button>
-                                <button type="button" @click="paymentMethod = 'transfer'" :class="paymentMethod === 'transfer' ? 'chip-active' : 'chip-inactive'" class="chip text-center justify-center">Transfer</button>
-                                <button type="button" @click="paymentMethod = 'qris'" :class="paymentMethod === 'qris' ? 'chip-active' : 'chip-inactive'" class="chip text-center justify-center">QRIS</button>
-                            </div>
+                        <div class="rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5">
+                            <p class="text-xs font-medium text-slate-600">Metode Pembayaran</p>
+                            <p class="text-sm font-semibold text-emerald-700">Pembayaran Digital</p>
+                            <p class="text-xs text-slate-500 mt-0.5">QRIS, Transfer Bank / Virtual Account, dan e-wallet. Pilih metode setelah menekan tombol bayar.</p>
                         </div>
                     </div>
 
@@ -107,7 +104,7 @@
                     <div class="flex gap-3">
                         <button type="button" @click="cartOpen = false" class="btn-secondary flex-1">Kembali</button>
                         <button type="button" @click="submitOrder()" :disabled="submitting" class="btn-primary flex-1">
-                            <span x-show="!submitting">Pesan Sekarang</span>
+                            <span x-show="!submitting">Bayar Sekarang</span>
                             <span x-show="submitting">Memproses...</span>
                         </button>
                     </div>

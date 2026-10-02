@@ -18,6 +18,10 @@ class Order extends Model
         'whatsapp_number',
         'payment_method',
         'payment_status',
+        'midtrans_order_id',
+        'snap_token',
+        'payment_type',
+        'paid_at',
         'total_amount',
         'status',
         'estimated_minutes',
@@ -29,6 +33,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'paid_at' => 'datetime',
             'confirmed_at' => 'datetime',
             'cooking_at' => 'datetime',
             'served_at' => 'datetime',

@@ -9,28 +9,39 @@ use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
-use App\Services\WhatsAppService;
+use App\Models\RestaurantTable;
+use App\Services\MidtransService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function __construct(protected WhatsAppService $whatsapp)
+    public function __construct(protected MidtransService $midtrans)
     {
     }
 
     /**
      * Simpan order baru dari customer (tanpa login), hitung total,
-     * generate nomor antrean, broadcast event, dan kirim notifikasi WA.
+     * generate nomor antrean, lalu minta Snap Token ke Midtrans.
+     * Broadcast ke dapur & notifikasi WA baru dikirim setelah pembayaran
+     * terkonfirmasi (lihat PaymentController).
      */
     public function store(StoreOrderRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
         $order = DB::transaction(function () use ($validated) {
+            // Kunci baris meja agar dua pelanggan tidak bisa memesan meja yang sama bersamaan
+            $table = RestaurantTable::whereKey($validated['table_id'])->lockForUpdate()->first();
+
+            if (! $table || ! $table->isAvailableFor($validated['whatsapp_number'])) {
+                abort(422, 'Meja yang dipilih sedang terisi. Silakan pilih meja lain.');
+            }
+
             $menus = Menu::whereIn('id', collect($validated['items'])->pluck('menu_id'))
                 ->get()
                 ->keyBy('id');
@@ -62,7 +73,7 @@ class OrderController extends Controller
                 'customer_name' => $validated['customer_name'],
                 'table_id' => $validated['table_id'],
                 'whatsapp_number' => $validated['whatsapp_number'],
-                'payment_method' => $validated['payment_method'],
+                'payment_method' => 'midtrans',
                 'payment_status' => 'pending',
                 'total_amount' => $totalAmount,
                 'status' => 'diterima',
@@ -83,26 +94,30 @@ class OrderController extends Controller
 
         $order->load('items', 'table');
 
-        // Broadcast ke dashboard admin/operator agar antrean baru langsung tampil
-        broadcast(new NewOrderCreated($order))->toOthers();
+        // Minta Snap Token ke Midtrans
+        try {
+            $snapToken = $this->midtrans->createSnapToken($order);
+        } catch (\Throwable $e) {
+            Log::error('Gagal membuat Snap Token Midtrans: ' . $e->getMessage());
 
-        // Kirim notifikasi WhatsApp (async via job akan lebih baik untuk production)
-        $waResult = $this->whatsapp->sendOrderReceived($order);
-
-        OrderStatusLog::where('order_id', $order->id)
-            ->latest()
-            ->first()
-            ?->update([
-                'whatsapp_sent' => $waResult['success'],
-                'whatsapp_response' => $waResult['response'],
+            $order->update([
+                'payment_status' => 'failed',
+                'status' => 'dibatalkan',
             ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghubungi sistem pembayaran. Silakan coba lagi.',
+            ], 502);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Pesanan berhasil dibuat!',
+            'message' => 'Pesanan dibuat, silakan lanjutkan pembayaran.',
             'order' => [
                 'id' => $order->id,
                 'queue_number' => $order->queue_number,
+                'snap_token' => $snapToken,
                 'tracking_url' => route('order.track', $order->id),
             ],
         ], 201);

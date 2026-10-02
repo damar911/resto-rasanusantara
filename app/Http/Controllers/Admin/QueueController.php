@@ -24,6 +24,7 @@ class QueueController extends Controller
 {
     $orders = Order::with(['items', 'table'])
         ->whereDate('created_at', today())
+        ->whereIn('payment_status', ['paid', 'confirmed'])
         ->orderBy('created_at')
         ->get()
         ->map(function ($o) {

@@ -13,7 +13,7 @@
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div>
                 <h1 class="font-bold text-lg leading-tight">RasaNusantara</h1>
-                <p class="text-emerald-100 text-xs">Sistem Antrean & Order</p>
+                <p class="text-emerald-100 text-xs">Masakan Nusantara</p>
             </div>
             <span class="bg-emerald-700 text-emerald-50 text-xs px-3 py-1 rounded-full">
                 Meja Pemesanan Mandiri
@@ -30,7 +30,8 @@
         <div class="max-w-5xl mx-auto grid grid-cols-3 text-center text-xs">
 
             <a href="{{ route('customer.menu') }}"
-                class="flex flex-col items-center gap-1 py-3 text-emerald-700">
+   class="flex flex-col items-center gap-1 py-3
+   {{ request()->routeIs('customer.menu') ? 'text-emerald-700' : 'text-slate-500' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
@@ -53,8 +54,9 @@
                 <span>Keranjang</span>
             </button>
 
-            <a href="#" id="nav-track-btn"
-                class="flex flex-col items-center gap-1 py-3 text-slate-500">
+            <a href="{{ route('order.track-search') }}"
+   class="flex flex-col items-center gap-1 py-3
+   {{ request()->routeIs('order.track-search') ? 'text-emerald-700' : 'text-slate-500' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>

@@ -70,7 +70,7 @@
                     <td class="px-4 py-3">{{ $order->customer_name }}</td>
                     <td class="px-4 py-3 text-slate-600">{{ $order->table->label }}</td>
                     <td class="px-4 py-3 font-medium text-emerald-700">{{ $order->formatted_total }}</td>
-                    <td class="px-4 py-3 text-slate-600 capitalize">{{ $order->payment_method }}</td>
+                    <td class="px-4 py-3 text-slate-600 capitalize">{{ $order->payment_type ? str_replace('_', ' ', $order->payment_type) : $order->payment_method }}</td>
                     <td class="px-4 py-3 text-slate-500">{{ $order->created_at->format('d/m/Y H:i') }}</td>
                 </tr>
             @empty

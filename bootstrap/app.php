@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->alias([
         'role' => EnsureUserHasRole::class,
     ]);
+
+    // Webhook Midtrans dipanggil dari server Midtrans (tanpa CSRF token)
+    $middleware->validateCsrfTokens(except: [
+        'midtrans/notification',
+    ]);
 })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

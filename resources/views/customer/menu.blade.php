@@ -170,6 +170,8 @@
 @endsection
 
 @push('scripts')
+<script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
+        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js" defer></script>
 <script>
 // Data flat menu untuk search/filter (dari MenuController@index)
@@ -185,13 +187,13 @@ function menuPage() {
         // ---- Cart ----
         cartOpen: false,
         cart: [],
-        tables: @json($tables->map(fn($t) => ['id' => $t->id, 'label' => $t->label])),
+        tables: @json($tables),
         customerName: '',
-        tableId: '',
+        tableId: @json($preselectedTableId),
         whatsappNumber: '',
-        paymentMethod: 'tunai',
         submitting: false,
-        successOrder: null,
+        currentOrder: null,   // order yang sedang dibayar (id, snap_token, dst)
+        successOrder: null,   // dipakai modal hasil: {..., state: 'paid' | 'pending' | 'unpaid'}
         errorMessage: '',
 
         // ---- Rating ----
@@ -207,6 +209,9 @@ function menuPage() {
 
         // ====== INIT ======
         init() {
+            // Segarkan ketersediaan meja setiap keranjang dibuka
+            this.$watch('cartOpen', open => { if (open) this.loadTables(); });
+
             // FIX: null-check supaya tidak error saat elemen belum ada,
             // yang sebelumnya bikin SEMUA @click 
             const navCartBtn = document.getElementById('nav-cart-btn');
@@ -292,24 +297,82 @@ function menuPage() {
                         customer_name: this.customerName,
                         table_id: this.tableId,
                         whatsapp_number: this.whatsappNumber,
-                        payment_method: this.paymentMethod,
                         items: this.cart.map(i => ({ menu_id: i.menuId, quantity: i.qty })),
                     }),
                 });
                 const data = await response.json();
                 if (!response.ok) {
                     this.errorMessage = data.message || 'Gagal membuat pesanan. Silakan coba lagi.';
+                    this.loadTables();
                     this.submitting = false;
                     return;
                 }
-                this.successOrder = data.order;
+                this.currentOrder = data.order;
                 this.cart = [];
                 this.updateBadge();
                 this.cartOpen = false;
+                this.payOrder();
             } catch (e) {
                 this.errorMessage = 'Terjadi kesalahan koneksi. Silakan coba lagi.';
             } finally {
                 this.submitting = false;
+            }
+        },
+
+        // ====== KETERSEDIAAN MEJA ======
+        async loadTables() {
+            try {
+                const res = await fetch(`{{ route('customer.tables') }}?whatsapp=${encodeURIComponent(this.whatsappNumber || '')}`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) return;
+                this.tables = await res.json();
+
+                // Jika meja yang dipilih ternyata sudah terisi, kosongkan pilihan
+                const chosen = this.tables.find(t => t.id == this.tableId);
+                if (chosen && !chosen.available) this.tableId = '';
+            } catch (e) { /* abaikan, validasi server tetap berjalan */ }
+        },
+
+        // ====== PEMBAYARAN ======
+        payOrder() {
+            const order = this.currentOrder;
+            if (!order) return;
+            this.successOrder = null;
+
+            window.snap.pay(order.snap_token, {
+                onSuccess: async () => {
+                    const status = await this.syncPayment(order);
+                    this.successOrder = { ...order, state: status === 'paid' ? 'paid' : 'pending' };
+                },
+                onPending: async () => {
+                    await this.syncPayment(order);
+                    this.successOrder = { ...order, state: 'pending' };
+                },
+                onError: () => {
+                    this.successOrder = { ...order, state: 'unpaid' };
+                },
+                onClose: () => {
+                    // Popup ditutup sebelum selesai: beri kesempatan melanjutkan
+                    if (!this.successOrder) {
+                        this.successOrder = { ...order, state: 'unpaid' };
+                    }
+                },
+            });
+        },
+        async syncPayment(order) {
+            try {
+                const res = await fetch(`{{ url('/order') }}/${order.id}/payment-sync`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await res.json();
+                return data.payment_status;
+            } catch (e) {
+                return 'pending';
             }
         },
 
