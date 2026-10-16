@@ -46,6 +46,25 @@
                 <input type="number" name="price" x-model="form.price" required min="0" class="input-field">
             </div>
 
+            <div class="rounded-xl border border-red-100 bg-red-50/40 p-3 space-y-3">
+                <p class="text-xs font-semibold text-red-600">Promo (opsional)</p>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 mb-1 block">Harga Promo (Rp)</label>
+                    <input type="number" name="promo_price" x-model="form.promo_price" min="0" placeholder="Kosongkan jika tidak promo" class="input-field">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Mulai</label>
+                        <input type="datetime-local" name="promo_starts_at" x-model="form.promo_starts_at" class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 mb-1 block">Berakhir</label>
+                        <input type="datetime-local" name="promo_ends_at" x-model="form.promo_ends_at" class="input-field">
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400">Tanggal boleh dikosongkan: promo langsung berlaku sampai harga promo dihapus.</p>
+            </div>
+
             <div>
                 <label class="text-xs font-medium text-slate-600 mb-1 block">Deskripsi Hidangan</label>
                 <textarea name="description" x-model="form.description" rows="3" class="input-field"></textarea>

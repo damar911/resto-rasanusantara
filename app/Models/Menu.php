@@ -17,11 +17,22 @@ class Menu extends Model
         'name',
         'description',
         'price',
+        'promo_price',
+        'promo_starts_at',
+        'promo_ends_at',
         'photo',
         'availability',
         'avg_rating',
         'rating_count',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'promo_starts_at' => 'datetime',
+            'promo_ends_at' => 'datetime',
+        ];
+    }
 
     public function category(): BelongsTo
     {
@@ -49,6 +60,54 @@ class Menu extends Model
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');
+    }
+
+    /**
+     * Status promo: 'active' (sedang berlaku), 'scheduled' (belum mulai),
+     * 'expired' (sudah berakhir), atau null (tidak ada promo).
+     */
+    public function promoStatus(): ?string
+    {
+        if ($this->promo_price === null || $this->promo_price >= $this->price) {
+            return null;
+        }
+
+        if ($this->promo_starts_at && $this->promo_starts_at->isFuture()) {
+            return 'scheduled';
+        }
+
+        if ($this->promo_ends_at && $this->promo_ends_at->isPast()) {
+            return 'expired';
+        }
+
+        return 'active';
+    }
+
+    public function isOnPromo(): bool
+    {
+        return $this->promoStatus() === 'active';
+    }
+
+    /**
+     * Harga yang dipakai untuk pemesanan (harga promo jika promo sedang berlaku).
+     */
+    public function getEffectivePriceAttribute(): int
+    {
+        return (int) ($this->isOnPromo() ? $this->promo_price : $this->price);
+    }
+
+    public function getFormattedEffectivePriceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->effective_price, 0, ',', '.');
+    }
+
+    public function getDiscountPercentAttribute(): int
+    {
+        if (! $this->isOnPromo() || $this->price <= 0) {
+            return 0;
+        }
+
+        return (int) round((1 - $this->promo_price / $this->price) * 100);
     }
 
     public function scopeAvailable($query)

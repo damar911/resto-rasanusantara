@@ -49,6 +49,10 @@ class NewOrderCreated implements ShouldBroadcast
             'total_amount' => $this->order->total_amount,
             'formatted_total' => $this->order->formatted_total,
             'items_count' => $this->order->items->sum('quantity'),
+            'items' => $this->order->items->map(fn ($i) => [
+                'name' => $i->menu_name,
+                'quantity' => $i->quantity,
+            ])->values(),
             'created_at' => $this->order->created_at->format('H:i'),
         ];
     }

@@ -25,7 +25,15 @@
                             <span class="text-xs text-slate-400" x-text="order.created_at"></span>
                         </div>
                         <p class="text-sm text-slate-600 mb-1" x-text="order.customer_name"></p>
-                        <p class="text-xs text-slate-400 mb-3" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <p class="text-xs text-slate-400 mb-2" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <ul class="border-t border-slate-100 pt-2 mb-3 space-y-1">
+                            <template x-for="(item, i) in order.items" :key="i">
+                                <li class="flex gap-2 text-sm text-slate-700">
+                                    <span class="font-bold text-emerald-700 w-8 flex-shrink-0" x-text="item.quantity + '×'"></span>
+                                    <span x-text="item.name"></span>
+                                </li>
+                            </template>
+                        </ul>
                         <button type="button" @click="updateStatus(order, 'dimasak')" class="btn-primary w-full text-xs py-2">
                             Mulai Masak &rarr;
                         </button>
@@ -46,7 +54,15 @@
                             <span class="text-xs text-slate-400" x-text="order.created_at"></span>
                         </div>
                         <p class="text-sm text-slate-600 mb-1" x-text="order.customer_name"></p>
-                        <p class="text-xs text-slate-400 mb-3" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <p class="text-xs text-slate-400 mb-2" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <ul class="border-t border-slate-100 pt-2 mb-3 space-y-1">
+                            <template x-for="(item, i) in order.items" :key="i">
+                                <li class="flex gap-2 text-sm text-slate-700">
+                                    <span class="font-bold text-emerald-700 w-8 flex-shrink-0" x-text="item.quantity + '×'"></span>
+                                    <span x-text="item.name"></span>
+                                </li>
+                            </template>
+                        </ul>
                         <button type="button" @click="updateStatus(order, 'disajikan')" class="btn-primary w-full text-xs py-2">
                             Sajikan &rarr;
                         </button>
@@ -67,7 +83,15 @@
                             <span class="text-xs text-slate-400" x-text="order.created_at"></span>
                         </div>
                         <p class="text-sm text-slate-600 mb-1" x-text="order.customer_name"></p>
-                        <p class="text-xs text-slate-400" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <p class="text-xs text-slate-400 mb-2" x-text="order.table_label + ' · ' + order.items_count + ' item · ' + order.formatted_total"></p>
+                        <ul class="border-t border-slate-100 pt-2 mb-0 space-y-1">
+                            <template x-for="(item, i) in order.items" :key="i">
+                                <li class="flex gap-2 text-sm text-slate-700">
+                                    <span class="font-bold text-emerald-700 w-8 flex-shrink-0" x-text="item.quantity + '×'"></span>
+                                    <span x-text="item.name"></span>
+                                </li>
+                            </template>
+                        </ul>
                     </div>
                 </template>
                 <p x-show="orders.filter(o => o.status === 'disajikan').length === 0" class="text-slate-400 text-xs text-center py-6">Belum ada yang selesai</p>
@@ -116,6 +140,7 @@ function queuePage() {
                         status: data.status,
                         items_count: data.items_count,
                         formatted_total: data.formatted_total,
+                        items: data.items || [],
                         created_at: data.created_at,
                     });
                 })

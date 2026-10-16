@@ -56,13 +56,13 @@ class OrderController extends Controller
                     abort(422, "Menu \"{$menu?->name}\" sedang tidak tersedia.");
                 }
 
-                $subtotal = $menu->price * $item['quantity'];
+                $subtotal = $menu->effective_price * $item['quantity'];
                 $totalAmount += $subtotal;
 
                 $itemsToCreate[] = [
                     'menu_id' => $menu->id,
                     'menu_name' => $menu->name,
-                    'menu_price' => $menu->price,
+                    'menu_price' => $menu->effective_price,
                     'quantity' => $item['quantity'],
                     'subtotal' => $subtotal,
                 ];

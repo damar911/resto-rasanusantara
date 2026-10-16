@@ -43,6 +43,16 @@
         >
             Semua Menu
         </button>
+        @if ($promoCount > 0)
+            <button
+                type="button"
+                @click="activeCategory = 'promo'; filterMenus()"
+                :class="activeCategory === 'promo' ? 'chip chip-active' : 'chip chip-inactive'"
+                class="flex-shrink-0"
+            >
+                🔥 Promo ({{ $promoCount }})
+            </button>
+        @endif
         @foreach ($categories as $category)
             <button
                 type="button"
@@ -80,6 +90,11 @@
                             class="w-full h-full object-cover"
                             loading="lazy"
                         >
+                        @if ($menu->isOnPromo())
+                            <span class="absolute top-2 left-2 z-20 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                                PROMO -{{ $menu->discount_percent }}%
+                            </span>
+                        @endif
                         @if (! $menu->isAvailable())
                             <div class="absolute inset-0 bg-slate-900/60 flex items-center justify-center pointer-events-none z-10">
                                 <span class="bg-white text-slate-700 text-xs font-semibold px-3 py-1 rounded-full">Habis</span>
@@ -96,7 +111,7 @@
                             @else
                                 <p class="text-xs text-slate-400 italic">Belum ada deskripsi untuk menu ini.</p>
                             @endif
-                            <p class="text-emerald-300 font-bold text-sm mt-2">{{ $menu->formatted_price }}</p>
+                            <p class="text-emerald-300 font-bold text-sm mt-2">{{ $menu->formatted_effective_price }}</p>
                         </div>
                     </div>
 
@@ -137,7 +152,14 @@
                             </p>
                         @endif
 
-                        <p class="text-emerald-700 font-bold text-sm mb-2">{{ $menu->formatted_price }}</p>
+                        @if ($menu->isOnPromo())
+                            <div class="mb-2">
+                                <span class="text-slate-400 text-xs line-through block">{{ $menu->formatted_price }}</span>
+                                <span class="text-red-600 font-bold text-sm">{{ $menu->formatted_effective_price }}</span>
+                            </div>
+                        @else
+                            <p class="text-emerald-700 font-bold text-sm mb-2">{{ $menu->formatted_price }}</p>
+                        @endif
 
                         {{-- Tombol aksi: flex-nowrap supaya selalu sejajar kanan-kiri,
                              tidak pindah baris meski card menyempit --}}
@@ -150,7 +172,7 @@
 
                             <button
                                 type="button"
-                                @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', {{ $menu->price }})"
+                                @click="addToCart({{ $menu->id }}, '{{ addslashes($menu->name) }}', {{ $menu->effective_price }})"
                                 :disabled="{{ $menu->isAvailable() ? 'false' : 'true' }}"
                                 class="btn-primary relative z-10 text-xs py-2.5 flex-1 min-w-0 whitespace-nowrap overflow-hidden shadow-sm hover:shadow-md disabled:shadow-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-transform cursor-pointer"
                             >
@@ -229,7 +251,8 @@ function menuPage() {
             const q = this.searchQuery.toLowerCase().trim();
             this.filteredMenus = ALL_MENUS
                 .filter(m => {
-                    const matchCategory = this.activeCategory === null || m.category_id === this.activeCategory;
+                    const matchCategory = this.activeCategory === null
+                        || (this.activeCategory === 'promo' ? m.is_promo : m.category_id === this.activeCategory);
                     const matchSearch = q === '' ||
                         m.name.toLowerCase().includes(q) ||
                         (m.description && m.description.toLowerCase().includes(q));

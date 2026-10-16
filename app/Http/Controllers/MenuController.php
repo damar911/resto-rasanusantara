@@ -44,6 +44,7 @@ class MenuController extends Controller
                 'category_id' => $m->category_id,
                 'name'        => $m->name,
                 'description' => $m->description ?? '',
+                'is_promo'    => $m->isOnPromo(),
             ];
         })->values();
 
@@ -53,6 +54,7 @@ class MenuController extends Controller
             'tables'             => $tables,
             'menusForJs'         => $menusForJs,
             'preselectedTableId' => $preselectedTableId,
+            'promoCount'         => $menus->flatten()->filter->isOnPromo()->count(),
         ]);
     }
 

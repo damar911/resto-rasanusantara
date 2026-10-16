@@ -35,6 +35,10 @@ class QueueController extends Controller
                 'table_label' => $o->table->label,
                 'status' => $o->status,
                 'items_count' => $o->items->sum('quantity'),
+                'items' => $o->items->map(fn ($i) => [
+                    'name' => $i->menu_name,
+                    'quantity' => $i->quantity,
+                ])->values(),
                 'formatted_total' => $o->formatted_total,
                 'created_at' => $o->created_at->format('H:i'),
             ];

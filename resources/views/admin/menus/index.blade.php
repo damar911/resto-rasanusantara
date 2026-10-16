@@ -45,14 +45,41 @@
                             </div>
                         </td>
                         <td class="px-4 py-3 text-slate-600">{{ $menu->category->name }}</td>
-                        <td class="px-4 py-3 font-medium text-emerald-700">{{ $menu->formatted_price }}</td>
+                        <td class="px-4 py-3">
+                            @php
+                                $promo = $menu->promoStatus();
+                                $editData = [
+                                    'id' => $menu->id,
+                                    'category_id' => $menu->category_id,
+                                    'name' => $menu->name,
+                                    'description' => $menu->description,
+                                    'price' => $menu->price,
+                                    'promo_price' => $menu->promo_price,
+                                    'promo_starts_at' => $menu->promo_starts_at?->format('Y-m-d\TH:i'),
+                                    'promo_ends_at' => $menu->promo_ends_at?->format('Y-m-d\TH:i'),
+                                    'availability' => $menu->availability,
+                                ];
+                            @endphp
+                            @if ($promo === 'active')
+                                <span class="text-slate-400 text-xs line-through block">{{ $menu->formatted_price }}</span>
+                                <span class="font-medium text-red-600">{{ $menu->formatted_effective_price }}</span>
+                                <span class="text-[10px] font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full ml-1">Promo aktif</span>
+                            @else
+                                <span class="font-medium text-emerald-700">{{ $menu->formatted_price }}</span>
+                                @if ($promo === 'scheduled')
+                                    <span class="text-[10px] font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full ml-1">Promo terjadwal</span>
+                                @elseif ($promo === 'expired')
+                                    <span class="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-1">Promo berakhir</span>
+                                @endif
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <span class="text-xs font-medium px-2.5 py-1 rounded-full {{ $menu->isAvailable() ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600' }}">
                                 {{ $menu->isAvailable() ? 'Tersedia' : 'Habis' }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-right space-x-2">
-                            <button type="button" @click='openEditModal({{ $menu->toJson() }})' class="text-emerald-600 hover:text-emerald-800 text-xs font-medium">Edit</button>
+                            <button type="button" @click="openEditModal(@js($editData))" class="text-emerald-600 hover:text-emerald-800 text-xs font-medium">Edit</button>
                             <form method="POST" action="{{ route('admin.menus.destroy', $menu) }}" class="inline" onsubmit="return confirm('Hapus menu {{ addslashes($menu->name) }}?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-medium">Hapus</button>
@@ -82,12 +109,15 @@ function menuManagement() {
             name: '',
             description: '',
             price: '',
+            promo_price: '',
+            promo_starts_at: '',
+            promo_ends_at: '',
             availability: 'available',
         },
 
         openCreateModal() {
             this.isEdit = false;
-            this.form = { id: null, category_id: '', name: '', description: '', price: '', availability: 'available' };
+            this.form = { id: null, category_id: '', name: '', description: '', price: '', promo_price: '', promo_starts_at: '', promo_ends_at: '', availability: 'available' };
             this.modalOpen = true;
         },
 
@@ -99,6 +129,9 @@ function menuManagement() {
                 name: menu.name,
                 description: menu.description ?? '',
                 price: menu.price,
+                promo_price: menu.promo_price ?? '',
+                promo_starts_at: menu.promo_starts_at ?? '',
+                promo_ends_at: menu.promo_ends_at ?? '',
                 availability: menu.availability,
             };
             this.modalOpen = true;
